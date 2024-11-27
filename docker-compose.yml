@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  flask-app:
+    build: .
+    container_name: flask-app-container
+    ports:
+      - "5001:5000"
+    environment:
+      FLASK_ENV: development
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: flask_db
+      MYSQL_USER: flask_user
+      MYSQL_PASSWORD: flask_password
+    depends_on:
+      - mysql
+    volumes:
+      - .:/Application
+    command: ["/wait-for-it.sh", "mysql:3306", "--", "python", "main.py"]
+
+  mysql:
+    image: mysql:8.0.32
+    container_name: mysql-container
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: flask_db
+      MYSQL_USER: flask_user
+      MYSQL_PASSWORD: flask_password
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./setupDatabase.sql:/docker-entrypoint-initdb.d/setupDatabase.sql
+    command: --bind-address=0.0.0.0
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "mysql", "-u", "root", "-proot_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  mysql-data:
