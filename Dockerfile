@@ -20,5 +20,5 @@ RUN chmod +x /wait-for-it.sh
 # Install MySQL client to execute SQL script
 RUN apt-get update && apt-get install -y default-mysql-client && rm -rf /var/lib/apt/lists/*
 
-# Use wait-for-it to wait for MySQL and then run the setup script and Flask app
-CMD /wait-for-it.sh mysql:3306 -- mysql -h mysql -u flask_user -pflask_password flask_db < setupDatabase.sql && python main.py
+# Use wait-for-it to wait for MySQL to be ready, then run the setup script and Flask app
+CMD /wait-for-it.sh mysql:3306 -- mysql -h mysql -u flask_user -pflask_password flask_db < setupDatabase.sql && gunicorn -b 0.0.0.0:$PORT main:app

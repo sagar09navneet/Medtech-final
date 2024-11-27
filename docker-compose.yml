@@ -5,9 +5,10 @@ services:
     build: .
     container_name: flask-app-container
     ports:
-      - "5001:5000"
+      - "5001:5000"  # Mapping host port 5001 to container port 5000
     environment:
       FLASK_ENV: development
+      FLASK_APP: main.py
       MYSQL_HOST: mysql
       MYSQL_DATABASE: flask_db
       MYSQL_USER: flask_user
@@ -16,7 +17,7 @@ services:
       - mysql
     volumes:
       - .:/Application
-    command: ["/wait-for-it.sh", "mysql:3306", "--", "python", "main.py"]
+    command: ["sh", "-c", "/wait-for-it.sh mysql:3306 -- gunicorn -b 0.0.0.0:${PORT} main:app"]  # Gunicorn with ${PORT}
 
   mysql:
     image: mysql:8.0.32
